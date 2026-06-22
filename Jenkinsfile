@@ -99,26 +99,48 @@ pipeline {
            OWASP DEPENDENCY CHECK
         ===================================================== */
 
-        stage('OWASP Dependency Check') {
-            
+       /* =====================================================
+           OWASP DEPENDENCY CHECK
+        ===================================================== */
+
+       stage('OWASP Dependency Check') {
+
             steps {
-                unstash 'source-code'
-                dependencyCheck(
-                    odcInstallation: 'OWASP-DC',
-                    additionalArguments: '''
-                        --scan ${WORKSPACE}
-                        --format ALL
-                        --out ${WORKSPACE}/dependency-check-report
-                    '''
-                )
 
-                sh "ls -l dependency-check-report || true"
+            unstash 'source-code'
 
-                dependencyCheckPublisher(
-                    pattern: '**/dependency-check-report.xml'
-                )
-            }
-        }
+            sh '''
+                echo "Current Workspace:"
+                pwd
+                ls -la
+            '''
+
+        dependencyCheck(
+            odcInstallation: 'OWASP-DC',
+            additionalArguments: """
+                --scan ${WORKSPACE}
+                --format XML
+                --format HTML
+                --out ${WORKSPACE}/dependency-check-report
+            """
+        )
+
+        sh '''
+            echo "Checking generated reports..."
+            ls -la ${WORKSPACE}/dependency-check-report || true
+
+            echo "Finding XML reports..."
+            find ${WORKSPACE} -name "*.xml" || true
+
+            echo "Finding HTML reports..."
+            find ${WORKSPACE} -name "*.html" || true
+        '''
+
+        dependencyCheckPublisher(
+            pattern: 'dependency-check-report/dependency-check-report.xml'
+        )
+    }
+
 
         /* =====================================================
            DOCKER BUILD
