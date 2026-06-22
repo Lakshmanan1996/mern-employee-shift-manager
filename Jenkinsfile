@@ -154,7 +154,7 @@ pipeline {
         ===================================================== */
 
         stage('Trivy Scan') {
-            agent { label 'workernode3' }
+            
             steps {
                 sh """
                 trivy image --exit-code 0 --severity HIGH,CRITICAL ${DOCKERHUB_USER}/${IMAGE1}:${BUILD_NUMBER}
@@ -168,7 +168,7 @@ pipeline {
         ===================================================== */
 
         stage('Push Image') {
-            agent { label 'workernode3' }
+            
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
